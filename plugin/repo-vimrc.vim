@@ -76,7 +76,6 @@ endfunction
 " Global Commands
 command! -nargs=* RepoVimrcEdit call s:edit_repo_vimrc()
 command! -nargs=* RepoVimrcSource call s:source_repo_vimrc()
-command! -nargs=* RepoVimrcCreate call s:create_repo_vimrc()
 
 " Startup Code
 autocmd! BufReadPost,BufNewFile * call s:source_repo_vimrc()
