@@ -1,6 +1,10 @@
 " Global Variables
-let g:repo_vimrc_dir = '~/.vim/repo_vimrcs/'
-let g:repo_vimrc_ext = '.vimrc'
+if !exists('g:repo_vimrc_dir')
+    let g:repo_vimrc_dir = '~/.vim/repo_vimrcs/'
+endif
+if !exists('g:repo_vimrc_ext')
+    let g:repo_vimrc_ext = '.vimrc'
+endif
 
 " Functions
 function! s:get_repo_vimrc()
@@ -8,7 +12,7 @@ function! s:get_repo_vimrc()
     if l:repo_hash != '0'
         " XXX this could return multiple files, which would break things. We
         " should probably error in that case
-        let l:glob = g:repo_vimrc_dir . l:repo_hash . '*' . g:repo_vimrc_ext
+        let l:glob = expand(g:repo_vimrc_dir) . l:repo_hash . '*' . g:repo_vimrc_ext
         let l:repo_vimrc = glob(l:glob)
         if filereadable(l:repo_vimrc)
             return l:repo_vimrc
@@ -21,13 +25,13 @@ function! s:get_repo_vimrc()
 endfunction
 
 function! s:get_repo_hash()
-    let cd = exists('*haslocaldir') && haslocaldir() ? 'lcd ' : 'cd '
-    let dir = getcwd()
+    let l:cd = exists('*haslocaldir') && haslocaldir() ? 'lcd ' : 'cd '
+    let l:dir = getcwd()
     try
-        execute cd.'%:p:h'
-        return system("git log --pretty=format:%H 2> /dev/null | tail -1")
+        execute l:cd.'%:p:h'
+        return system('git log --pretty=format:%H 2> /dev/null | tail -1')
     finally
-        execute cd.'`=dir`'
+        execute l:cd.'`=dir`'
     endtry
 endfunction
 
@@ -36,7 +40,7 @@ function! s:edit_repo_vimrc()
     " Make sure we are actually in a git repo
     let l:repo_hash = s:get_repo_hash()
     if l:repo_hash == '0'
-        echoerr "You are not in a git repo"
+        echoerr 'You are not in a git repo'
         return 0
     endif
 
@@ -47,8 +51,8 @@ function! s:edit_repo_vimrc()
         echo "You don't have a .vimrc for this repo yet, let's create one."
 
         " Make sure the repo_vimrc_dir exits
-        if !isdirectory(g:repo_vimrc_dir)
-            call mkdir(g:repo_vimrc_dir, "p")
+        if !isdirectory(expand(g:repo_vimrc_dir))
+            call mkdir(expand(g:repo_vimrc_dir), "p")
         endif
 
         call inputsave()
@@ -60,7 +64,7 @@ function! s:edit_repo_vimrc()
         endif
 
         let l:repo_vimrc_filename = l:repo_hash . l:name . g:repo_vimrc_ext
-        let l:repo_vimrc = g:repo_vimrc_dir . l:repo_vimrc_filename
+        let l:repo_vimrc = expand(g:repo_vimrc_dir) . l:repo_vimrc_filename
         exec 'vsp ' . l:repo_vimrc
     endif
 endfunction
